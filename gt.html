@@ -1,0 +1,867 @@
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+							<style>
+								body {
+									background-color: white; /* Ensure the iframe has a white background */
+								}
+
+								
+							</style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学术甘特图生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', '微软雅黑', sans-serif;
+            background: #ffffff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a365d;
+            margin-bottom: 20px;
+            font-weight: normal;
+            font-size: 20px;
+        }
+
+        .config-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .config-panel h3 {
+            margin-bottom: 15px;
+            color: #2d3748;
+            font-size: 15px;
+        }
+
+        .config-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .config-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .config-item label {
+            font-size: 13px;
+            color: #4a5568;
+            white-space: nowrap;
+        }
+
+        .config-item input[type="number"] {
+            width: 60px;
+            padding: 5px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        .config-item input[type="color"] {
+            width: 36px;
+            height: 28px;
+            border: 1px solid #d1d5db;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .config-item select {
+            padding: 5px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            font-size: 13px;
+            background: white;
+        }
+
+        textarea {
+            width: 100%;
+            height: 280px;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            resize: vertical;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 3px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #1a5f7a;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #134b5f;
+        }
+
+        .error-msg {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 10px 15px;
+            margin-top: 10px;
+            border-radius: 3px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .gantt-wrapper {
+            background: white;
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .gantt-container {
+            overflow: auto;
+        }
+
+        .gantt-table {
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .gantt-table th,
+        .gantt-table td {
+            border: 1px solid #cbd5e0;
+            text-align: center;
+            vertical-align: middle;
+            overflow: hidden;
+        }
+
+        .header-year {
+            background: #1a5f7a;
+            color: white;
+            font-weight: bold;
+        }
+
+        .header-month {
+            background: #1a5f7a;
+            color: white;
+            font-weight: normal;
+        }
+
+        .header-phase {
+            background: #1a5f7a;
+            color: white;
+            font-weight: bold;
+            writing-mode: vertical-lr;
+            text-orientation: upright;
+            letter-spacing: 2px;
+        }
+
+        .header-title {
+            background: #1a5f7a;
+            color: white;
+            font-weight: bold;
+        }
+
+        .phase-num {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #1a5f7a;
+            font-size: 18px;
+            border-right: 3px solid #1a5f7a;
+        }
+
+        .task-name {
+            text-align: left;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .task-main {
+            background: #fff8e6;
+            font-weight: bold;
+            color: #1a365d;
+            border-left: 4px solid #d69e2e;
+        }
+
+        .task-sub {
+            background: #ffffff;
+            color: #2d3748;
+        }
+
+        .task-sub-type-theory {
+            color: #1a5f7a;
+        }
+
+        .task-sub-type-application {
+            color: #2d3748;
+        }
+
+        .task-sub-type-evaluation {
+            color: #718096;
+        }
+
+        .timeline-cell {
+            padding: 0;
+            position: relative;
+        }
+
+        .bar-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gantt-bar {
+            border-radius: 2px;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .alt-row {
+            background: #f8fafc;
+        }
+
+        .alt-row .task-sub {
+            background: #f8fafc;
+        }
+
+        .phase-separator td {
+            border-top: 2px solid #1a5f7a;
+        }
+
+        @media print {
+            .config-panel {
+                display: none;
+            }
+            .gantt-wrapper {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>学术甘特图生成器</h1>
+        
+        <div class="config-panel">
+            <h3>显示配置</h3>
+            <div class="config-row">
+                <div class="config-item">
+                    <label>时间显示:</label>
+                    <select id="timeDisplayMode">
+                        <option value="quarter">按季度 (Q1-Q4)</option>
+                        <option value="month">按月份 (1-12月)</option>
+                    </select>
+                </div>
+                <div class="config-item">
+                    <label>阶段列宽:</label>
+                    <input type="number" id="phaseColWidth" value="50" min="30" max="100">
+                </div>
+                <div class="config-item">
+                    <label>任务列宽:</label>
+                    <input type="number" id="taskColWidth" value="320" min="150" max="600">
+                </div>
+                <div class="config-item">
+                    <label>时间列宽:</label>
+                    <input type="number" id="timeColWidth" value="50" min="25" max="120">
+                </div>
+                <div class="config-item">
+                    <label>行高:</label>
+                    <input type="number" id="rowHeight" value="32" min="20" max="80">
+                </div>
+            </div>
+            <div class="config-row">
+                <div class="config-item">
+                    <label>子任务条高:</label>
+                    <input type="number" id="barHeight" value="10" min="4" max="30">
+                </div>
+                <div class="config-item">
+                    <label>主任务条高:</label>
+                    <input type="number" id="mainBarHeight" value="14" min="6" max="36">
+                </div>
+                <div class="config-item">
+                    <label>条起始%:</label>
+                    <input type="number" id="barStartPos" value="15" min="0" max="40">
+                </div>
+                <div class="config-item">
+                    <label>条结束%:</label>
+                    <input type="number" id="barEndPos" value="85" min="60" max="100">
+                </div>
+                <div class="config-item">
+                    <label>主题色:</label>
+                    <input type="color" id="primaryColor" value="#244094">
+                </div>
+                <div class="config-item">
+                    <label>强调色:</label>
+                    <input type="color" id="accentColor" value="#d69e2e">
+                </div>
+                <div class="config-item">
+                    <label>进度条色:</label>
+                    <input type="color" id="barColor" value="#7fadbe">
+                </div>
+            </div>
+            
+            <h3>数据配置 <span style="font-weight: normal; font-size: 12px; color: #718096;">（时间格式：YYYY-MM）</span></h3>
+            <textarea id="jsonInput">{
+    "title": "基于深度学习的图像识别技术研究",
+    "timeline": {
+        "startYear": 2024,
+        "startMonth": 9,
+        "endYear": 2027,
+        "endMonth": 6
+    },
+    "phases": [
+        {
+            "number": "一",
+            "tasks": [
+                {
+                    "name": "文献调研与开题准备",
+                    "type": "main",
+                    "start": "2024-09",
+                    "end": "2024-12"
+                }
+            ]
+        },
+        {
+            "number": "二",
+            "tasks": [
+                {
+                    "name": "研究内容1：基础模型构建与优化",
+                    "type": "main",
+                    "start": "2024-12",
+                    "end": "2025-08"
+                },
+                {
+                    "name": "理论研究1.1 - 网络架构设计与分析",
+                    "type": "theory",
+                    "start": "2024-12",
+                    "end": "2025-03"
+                },
+                {
+                    "name": "理论研究1.2 - 损失函数优化策略",
+                    "type": "theory",
+                    "start": "2025-02",
+                    "end": "2025-05"
+                },
+                {
+                    "name": "应用研究1.3 - 模型压缩与加速",
+                    "type": "application",
+                    "start": "2025-04",
+                    "end": "2025-07"
+                },
+                {
+                    "name": "性能评估1.4 - 基准测试与对比实验",
+                    "type": "evaluation",
+                    "start": "2025-06",
+                    "end": "2025-08"
+                }
+            ]
+        },
+        {
+            "number": "三",
+            "tasks": [
+                {
+                    "name": "研究内容2：多模态特征融合",
+                    "type": "main",
+                    "start": "2025-06",
+                    "end": "2026-03"
+                },
+                {
+                    "name": "理论研究2.1 - 跨模态注意力机制",
+                    "type": "theory",
+                    "start": "2025-06",
+                    "end": "2025-09"
+                },
+                {
+                    "name": "理论研究2.2 - 特征对齐与融合策略",
+                    "type": "theory",
+                    "start": "2025-08",
+                    "end": "2025-12"
+                },
+                {
+                    "name": "应用研究2.3 - 多源数据联合训练",
+                    "type": "application",
+                    "start": "2025-11",
+                    "end": "2026-02"
+                },
+                {
+                    "name": "性能评估2.4 - 消融实验与结果分析",
+                    "type": "evaluation",
+                    "start": "2026-01",
+                    "end": "2026-03"
+                }
+            ]
+        },
+        {
+            "number": "四",
+            "tasks": [
+                {
+                    "name": "研究内容3：实际场景应用与部署",
+                    "type": "main",
+                    "start": "2026-01",
+                    "end": "2026-10"
+                },
+                {
+                    "name": "理论研究3.1 - 域适应与迁移学习",
+                    "type": "theory",
+                    "start": "2026-01",
+                    "end": "2026-04"
+                },
+                {
+                    "name": "理论研究3.2 - 边缘设备优化部署",
+                    "type": "theory",
+                    "start": "2026-03",
+                    "end": "2026-06"
+                },
+                {
+                    "name": "应用研究3.3 - 原型系统开发与测试",
+                    "type": "application",
+                    "start": "2026-05",
+                    "end": "2026-08"
+                },
+                {
+                    "name": "性能评估3.4 - 实际场景验证评估",
+                    "type": "evaluation",
+                    "start": "2026-07",
+                    "end": "2026-10"
+                }
+            ]
+        },
+        {
+            "number": "五",
+            "tasks": [
+                {
+                    "name": "论文撰写与修改完善",
+                    "type": "main",
+                    "start": "2026-09",
+                    "end": "2027-04"
+                },
+                {
+                    "name": "答辩准备与最终提交",
+                    "type": "main",
+                    "start": "2027-03",
+                    "end": "2027-06"
+                }
+            ]
+        }
+    ]
+}</textarea>
+            
+            <div class="error-msg" id="errorMsg"></div>
+            
+            <div class="btn-row">
+                <button class="btn-primary" onclick="generateGantt()">生成甘特图</button>
+            </div>
+        </div>
+
+        <div class="gantt-wrapper">
+            <div class="gantt-container" id="ganttContainer">
+                <!-- 甘特图将在此处生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let config = {
+            timeDisplayMode: 'quarter',
+            phaseColWidth: 50,
+            taskColWidth: 320,
+            timeColWidth: 50,
+            rowHeight: 32,
+            barHeight: 10,
+            mainBarHeight: 14,
+            barStartPos: 15,
+            barEndPos: 85,
+            primaryColor: '#244094',
+            accentColor: '#d69e2e',
+            barColor: '#7fadbe'
+        };
+
+        function showError(msg) {
+            const el = document.getElementById('errorMsg');
+            el.textContent = msg;
+            el.style.display = msg ? 'block' : 'none';
+        }
+
+        function updateConfig() {
+            config.timeDisplayMode = document.getElementById('timeDisplayMode').value;
+            config.phaseColWidth = parseInt(document.getElementById('phaseColWidth').value) || 50;
+            config.taskColWidth = parseInt(document.getElementById('taskColWidth').value) || 320;
+            config.timeColWidth = parseInt(document.getElementById('timeColWidth').value) || 50;
+            config.rowHeight = parseInt(document.getElementById('rowHeight').value) || 32;
+            config.barHeight = parseInt(document.getElementById('barHeight').value) || 10;
+            config.mainBarHeight = parseInt(document.getElementById('mainBarHeight').value) || 14;
+            config.barStartPos = parseInt(document.getElementById('barStartPos').value) || 15;
+            config.barEndPos = parseInt(document.getElementById('barEndPos').value) || 85;
+            config.primaryColor = document.getElementById('primaryColor').value;
+            config.accentColor = document.getElementById('accentColor').value;
+            config.barColor = document.getElementById('barColor').value;
+        }
+
+        function parseMonth(str) {
+            if (!str) return null;
+            const match = str.match(/(\d{4})-(\d{1,2})/);
+            if (match) {
+                return { year: parseInt(match[1]), month: parseInt(match[2]) };
+            }
+            return null;
+        }
+
+        function monthToQuarter(month) {
+            return Math.ceil(month / 3);
+        }
+
+        function getMonthIndex(yearMonth, timeline) {
+            const startIndex = timeline.startYear * 12 + timeline.startMonth;
+            const targetIndex = yearMonth.year * 12 + yearMonth.month;
+            return targetIndex - startIndex;
+        }
+
+        function getQuarterIndex(yearMonth, timeline) {
+            const startQ = monthToQuarter(timeline.startMonth);
+            const startIndex = timeline.startYear * 4 + startQ;
+            const targetQ = monthToQuarter(yearMonth.month);
+            const targetIndex = yearMonth.year * 4 + targetQ;
+            return targetIndex - startIndex;
+        }
+
+        function getMonthPositionInQuarter(month) {
+            const quarterStartMonth = (monthToQuarter(month) - 1) * 3 + 1;
+            return (month - quarterStartMonth) / 3;
+        }
+
+        function generateMonthTimeline(timeline) {
+            const months = [];
+            let year = timeline.startYear;
+            let month = timeline.startMonth;
+            
+            while (year < timeline.endYear || (year === timeline.endYear && month <= timeline.endMonth)) {
+                months.push({ year, month });
+                month++;
+                if (month > 12) {
+                    month = 1;
+                    year++;
+                }
+            }
+            return months;
+        }
+
+        function generateQuarterTimeline(timeline) {
+            const quarters = [];
+            let year = timeline.startYear;
+            let quarter = monthToQuarter(timeline.startMonth);
+            const endQuarter = monthToQuarter(timeline.endMonth);
+            
+            while (year < timeline.endYear || (year === timeline.endYear && quarter <= endQuarter)) {
+                quarters.push({ year, quarter });
+                quarter++;
+                if (quarter > 4) {
+                    quarter = 1;
+                    year++;
+                }
+            }
+            return quarters;
+        }
+
+        function validateData(data) {
+            if (!data.title) return '缺少标题 (title)';
+            if (!data.timeline) return '缺少时间线配置 (timeline)';
+            if (!data.timeline.startYear || !data.timeline.startMonth) return '缺少开始时间';
+            if (!data.timeline.endYear || !data.timeline.endMonth) return '缺少结束时间';
+            if (!data.phases || !Array.isArray(data.phases)) return '缺少阶段配置 (phases)';
+            
+            for (let i = 0; i < data.phases.length; i++) {
+                const phase = data.phases[i];
+                if (!phase.number) return `阶段 ${i + 1} 缺少编号`;
+                if (!phase.tasks || !Array.isArray(phase.tasks)) return `阶段 ${phase.number} 缺少任务列表`;
+                
+                for (let j = 0; j < phase.tasks.length; j++) {
+                    const task = phase.tasks[j];
+                    if (!task.name) return `阶段 ${phase.number} 任务 ${j + 1} 缺少名称`;
+                    if (!task.start) return `任务 "${task.name}" 缺少开始时间`;
+                    if (!task.end) return `任务 "${task.name}" 缺少结束时间`;
+                    if (!parseMonth(task.start)) return `任务 "${task.name}" 开始时间格式错误，应为 YYYY-MM`;
+                    if (!parseMonth(task.end)) return `任务 "${task.name}" 结束时间格式错误，应为 YYYY-MM`;
+                }
+            }
+            return null;
+        }
+
+        function generateGantt() {
+            updateConfig();
+            showError('');
+            
+            let data;
+            try {
+                data = JSON.parse(document.getElementById('jsonInput').value);
+            } catch (e) {
+                showError('JSON 解析错误: ' + e.message);
+                return;
+            }
+
+            const validationError = validateData(data);
+            if (validationError) {
+                showError('数据验证错误: ' + validationError);
+                return;
+            }
+
+            const container = document.getElementById('ganttContainer');
+            const isQuarterMode = config.timeDisplayMode === 'quarter';
+            
+            let timeline, yearGroups;
+            
+            if (isQuarterMode) {
+                timeline = generateQuarterTimeline(data.timeline);
+                yearGroups = {};
+                timeline.forEach(t => {
+                    if (!yearGroups[t.year]) yearGroups[t.year] = [];
+                    yearGroups[t.year].push(t.quarter);
+                });
+            } else {
+                timeline = generateMonthTimeline(data.timeline);
+                yearGroups = {};
+                timeline.forEach(t => {
+                    if (!yearGroups[t.year]) yearGroups[t.year] = [];
+                    yearGroups[t.year].push(t.month);
+                });
+            }
+
+            const totalWidth = config.phaseColWidth + config.taskColWidth + (timeline.length * config.timeColWidth);
+
+            let html = `<table class="gantt-table" style="width: ${totalWidth}px;">`;
+            
+            html += `<colgroup>`;
+            html += `<col style="width: ${config.phaseColWidth}px;">`;
+            html += `<col style="width: ${config.taskColWidth}px;">`;
+            timeline.forEach(() => {
+                html += `<col style="width: ${config.timeColWidth}px;">`;
+            });
+            html += `</colgroup>`;
+            
+            html += `<thead><tr>
+                <th class="header-phase" rowspan="2" style="background: ${config.primaryColor}; padding: 8px 4px;">阶段</th>
+                <th class="header-title" rowspan="2" style="background: ${config.primaryColor}; padding: 8px 12px;">${data.title}</th>`;
+            
+            Object.keys(yearGroups).forEach(year => {
+                html += `<th class="header-year" colspan="${yearGroups[year].length}" style="background: ${config.primaryColor}; padding: 6px;">${year}年</th>`;
+            });
+            html += `</tr>`;
+            
+            html += `<tr>`;
+            if (isQuarterMode) {
+                timeline.forEach(t => {
+                    html += `<th class="header-month" style="background: ${config.primaryColor}; padding: 4px; font-size: 13px;">Q${t.quarter}</th>`;
+                });
+            } else {
+                timeline.forEach(t => {
+                    html += `<th class="header-month" style="background: ${config.primaryColor}; padding: 4px; font-size: 12px;">${t.month}月</th>`;
+                });
+            }
+            html += `</tr></thead>`;
+            
+            html += `<tbody>`;
+            let rowIndex = 0;
+            
+            data.phases.forEach((phase, phaseIndex) => {
+                const phaseRowCount = phase.tasks.length;
+                
+                phase.tasks.forEach((task, taskIndex) => {
+                    const isFirstInPhase = taskIndex === 0;
+                    const isPhaseStart = isFirstInPhase && phaseIndex > 0;
+                    const altClass = rowIndex % 2 === 1 ? 'alt-row' : '';
+                    const separatorClass = isPhaseStart ? 'phase-separator' : '';
+                    
+                    html += `<tr class="${altClass} ${separatorClass}" style="height: ${config.rowHeight}px;">`;
+                    
+                    if (isFirstInPhase) {
+                        html += `<td class="phase-num" rowspan="${phaseRowCount}" style="border-right-color: ${config.primaryColor}; color: ${config.primaryColor};">${phase.number}</td>`;
+                    }
+                    
+                    let taskClass = 'task-name';
+                    let taskStyle = `padding: 4px 12px;`;
+                    if (task.type === 'main') {
+                        taskClass += ' task-main';
+                        taskStyle += `border-left-color: ${config.accentColor};`;
+                    } else {
+                        taskClass += ' task-sub';
+                        taskStyle += `padding-left: 24px;`;
+                        if (task.type === 'theory') taskClass += ' task-sub-type-theory';
+                        else if (task.type === 'application') taskClass += ' task-sub-type-application';
+                        else if (task.type === 'evaluation') taskClass += ' task-sub-type-evaluation';
+                    }
+                    html += `<td class="${taskClass}" style="${taskStyle}" title="${task.name}">${task.name}</td>`;
+                    
+                    const startDate = parseMonth(task.start);
+                    const endDate = parseMonth(task.end);
+                    
+                    if (isQuarterMode) {
+                        const startIdx = startDate ? getQuarterIndex(startDate, data.timeline) : -1;
+                        const endIdx = endDate ? getQuarterIndex(endDate, data.timeline) : -1;
+                        const startPosInQ = startDate ? getMonthPositionInQuarter(startDate.month) : 0;
+                        const endPosInQ = endDate ? getMonthPositionInQuarter(endDate.month) : 1;
+                        
+                        timeline.forEach((t, idx) => {
+                            html += `<td class="timeline-cell">`;
+                            html += `<div class="bar-container">`;
+                            
+                            if (idx >= startIdx && idx <= endIdx) {
+                                const isMain = task.type === 'main';
+                                const barColor = isMain ? config.accentColor : config.barColor;
+                                const barH = isMain ? config.mainBarHeight : config.barHeight;
+                                
+                                let leftPos, rightPos;
+                                
+                                if (idx === startIdx && idx === endIdx) {
+                                    leftPos = config.barStartPos + startPosInQ * (config.barEndPos - config.barStartPos);
+                                    rightPos = config.barStartPos + (endPosInQ + 0.33) * (config.barEndPos - config.barStartPos);
+                                    rightPos = Math.min(rightPos, config.barEndPos);
+                                } else if (idx === startIdx) {
+                                    leftPos = config.barStartPos + startPosInQ * (config.barEndPos - config.barStartPos);
+                                    rightPos = 100;
+                                } else if (idx === endIdx) {
+                                    leftPos = 0;
+                                    rightPos = config.barStartPos + (endPosInQ + 0.33) * (config.barEndPos - config.barStartPos);
+                                    rightPos = Math.min(rightPos, config.barEndPos);
+                                } else {
+                                    leftPos = 0;
+                                    rightPos = 100;
+                                }
+                                
+                                const width = rightPos - leftPos;
+                                html += `<div class="gantt-bar" style="background: ${barColor}; height: ${barH}px; width: ${width}%; left: ${leftPos}%;"></div>`;
+                            }
+                            
+                            html += `</div></td>`;
+                        });
+                    } else {
+                        const startIdx = startDate ? getMonthIndex(startDate, data.timeline) : -1;
+                        const endIdx = endDate ? getMonthIndex(endDate, data.timeline) : -1;
+                        
+                        timeline.forEach((t, idx) => {
+                            html += `<td class="timeline-cell">`;
+                            html += `<div class="bar-container">`;
+                            
+                            if (idx >= startIdx && idx <= endIdx) {
+                                const isMain = task.type === 'main';
+                                const barColor = isMain ? config.accentColor : config.barColor;
+                                const barH = isMain ? config.mainBarHeight : config.barHeight;
+                                
+                                let leftPos, rightPos;
+                                
+                                if (idx === startIdx && idx === endIdx) {
+                                    leftPos = config.barStartPos;
+                                    rightPos = config.barEndPos;
+                                } else if (idx === startIdx) {
+                                    leftPos = config.barStartPos;
+                                    rightPos = 100;
+                                } else if (idx === endIdx) {
+                                    leftPos = 0;
+                                    rightPos = config.barEndPos;
+                                } else {
+                                    leftPos = 0;
+                                    rightPos = 100;
+                                }
+                                
+                                const width = rightPos - leftPos;
+                                html += `<div class="gantt-bar" style="background: ${barColor}; height: ${barH}px; width: ${width}%; left: ${leftPos}%;"></div>`;
+                            }
+                            
+                            html += `</div></td>`;
+                        });
+                    }
+                    
+                    html += `</tr>`;
+                    rowIndex++;
+                });
+            });
+            
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+            
+            updateDynamicStyles();
+        }
+
+        function updateDynamicStyles() {
+            let styleEl = document.getElementById('dynamicStyles');
+            if (styleEl) styleEl.remove();
+            
+            const style = document.createElement('style');
+            style.id = 'dynamicStyles';
+            style.textContent = `
+                .phase-separator td {
+                    border-top: 2px solid ${config.primaryColor} !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.querySelectorAll('.config-item input, .config-item select').forEach(input => {
+            input.addEventListener('change', generateGantt);
+            if (input.type === 'number') {
+                input.addEventListener('input', function() {
+                    clearTimeout(this.debounceTimer);
+                    this.debounceTimer = setTimeout(generateGantt, 300);
+                });
+            }
+        });
+
+        document.querySelectorAll('input[type="color"]').forEach(input => {
+            input.addEventListener('input', generateGantt);
+        });
+
+        window.onload = function() {
+            generateGantt();
+        };
+    </script>
+</body>
+</html>
+
+							<script>
+                            	
+							</script>
+                        </body>
+                        </html>
+                    
